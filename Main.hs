@@ -162,16 +162,13 @@ rateLimit initialRate initialRateConstraints rateGovernor eJob = mdo
   let 
     eRateUpdate = attachWith rateGovernor bRate (eJobResult <&> mapLeft fst)
     eTickRate = tag bRate eTick
-    eAddJob = eJob <&> (\job -> (|> job))
-    eAddJobRetry = eJobRetry <&> (\job -> (job <|))
+    eAddNewJob = eJob <&> (\job -> (|> job))
+    eAddRetryJob = eJobRetry <&> (\job -> (job <|))
     eJobsPerTick = eTickRate <&> fst
     eDropJobs = eJobsPerTick <&> Seq.drop
     eTakeJobs = eJobsPerTick <&> Seq.take
 
-  bRetryJobs <- accumB (&) Seq.empty eAddJobRetry
-  bNewJobs <- accumB (&) Seq.empty eAddJob
-
-  bJobs <- accumB (&) Seq.empty (mergeWith (.) [eAddJobRetry, eAddJob, eDropJobs])
+  bJobs <- accumB (&) Seq.empty (mergeWith (.) [eAddRetryJob, eAddNewJob, eDropJobs])
 
   let
     eChosenJobs = attachWith (&) bJobs eTakeJobs
