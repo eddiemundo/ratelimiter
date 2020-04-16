@@ -6,7 +6,7 @@
 5. Call `rateLimit` with the above parameters.
 
 #### What happens:
-A tick event stream is created that drives the rate limiter. Each tick we batch however many jobs decided by the parameters above and run them asynchronously, each in their own thread. If the jobs in the batch finish successfully they are output in FIFO order. If some of the jobs in a batch don't finish successfully they are retried until they succeed. Typically you'd use the rate governor function to decide how to slow the rate in response to failures (and raise the rate in response to successes). If any of the rate constraints are exceeded then the rate is lowered to 0 until the rate constraint intervals lengths are exceeded and the constraints reset.
+A tick event stream is created that drives the rate limiter. Each tick we batch however many jobs decided by the parameters above and run them asynchronously, each in their own thread. If the jobs in the batch finish successfully they are output in FIFO order. If some of the jobs in a batch don't finish successfully they are retried until they succeed. Typically you'd use the rate governor function to decide how to slow the rate in response to failures (and raise the rate in response to successes). If any of the rate constraints are exceeded then the rate is lowered to 0 until the rate constraint interval lengths are exceeded and the rate constraints reset.
 
 #### Purpose:
 I wanted to see how writing a rate limiter might look in FRP, and wanted to try Reflex. I also need a rate limiter for another project, hence some idiosyncratic design decisions.
