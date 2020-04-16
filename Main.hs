@@ -48,7 +48,7 @@ getPicosAfterMidnight :: IO Picos
 getPicosAfterMidnight = getCurrentTime <&> (utctDayTime >>> diffTimeToPicoseconds >>> toInteger >>> coerce)
 
 -- Wait until next interval start where we start counting intervals from midnight.
--- Returns picos elapsed since midnight.
+-- Returns picos elapsed since before threadDelay
 waitUntilNext :: Picos -> IO Picos
 waitUntilNext intervalLength = do
   picosAfterMidnightBefore <- getPicosAfterMidnight
@@ -151,7 +151,6 @@ rateLimit initialRate initialRateConstraints rateGovernor eJob = mdo
         ) (initialRateConstraints, 0) eTickRate
     in
       mbRateConstraints <&> (<&> fst)
-  performEvent_ $ tag bRateConstraints eTick <&> (\rcs -> print rcs & liftIO)
 
   bRate <-
     let
@@ -174,6 +173,7 @@ rateLimit initialRate initialRateConstraints rateGovernor eJob = mdo
     eChosenJobs = attachWith (&) bJobs eTakeJobs
 
   -- tracing
+  performEvent_ $ tag bRateConstraints eTick <&> (\rcs -> print rcs & liftIO)
   performEvent_ $ eTickRate <&> (liftIO . print)
   performEvent_ $ (\jobs -> liftIO $ putStrLn ("BJob Count: " ++ show (length jobs) )) <$> tag bJobs eTickRate
   performEvent_ $ (\activeJobs -> liftIO $ putStrLn ("CJob Count: " ++ show (length activeJobs) )) <$> eChosenJobs
